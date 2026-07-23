@@ -111,7 +111,95 @@
     switchToDay(day, false); // Don't push state again
   });
 
+  // --- Dynamic Rosary Mysteries ---
+  const mysteries = {
+    radosne: [
+      "Zwiastowanie Najświętszej Maryi Pannie.",
+      "Nawiedzenie świętej Elżbiety.",
+      "Narodzenie Pana Jezusa.",
+      "Ofiarowanie Jezusa w Świątyni.",
+      "Odnalezienie Jezusa w Świątyni."
+    ],
+    swiatla: [
+      "Chrzest Pana Jezusa w Jordanie.",
+      "Objawienie się Pana Jezusa w Kanie Galilejskiej.",
+      "Głoszenie królestwa Bożego i wzywanie do nawrócenia.",
+      "Przemienienie Pańskie na górze Tabor.",
+      "Ustanowienie Eucharystii."
+    ],
+    bolesne: [
+      "Modlitwa Pana Jezusa w Ogrójcu.",
+      "Biczowanie Pana Jezusa.",
+      "Cierniem ukoronowanie Pana Jezusa.",
+      "Droga krzyżowa Pana Jezusa.",
+      "Ukrzyżowanie i śmierć Pana Jezusa."
+    ],
+    chwalebne: [
+      "Zmartwychwstanie Pana Jezusa.",
+      "Wniebowstąpienie Pana Jezusa.",
+      "Zesłanie Ducha Świętego.",
+      "Wniebowzięcie Najświętszej Maryi Panny.",
+      "Ukoronowanie Maryi na Królową Nieba i Ziemi."
+    ]
+  };
+
+  function getMysteriesForToday() {
+    const day = new Date().getDay();
+    const map = {
+      0: mysteries.chwalebne,
+      1: mysteries.radosne,
+      2: mysteries.bolesne,
+      3: mysteries.chwalebne,
+      4: mysteries.swiatla,
+      5: mysteries.bolesne,
+      6: mysteries.radosne
+    };
+    return map[day] || mysteries.radosne;
+  }
+
+  function generateMysteryHTML(titleArray, isLastPart) {
+    const commonPrayers = `
+      <p class="prayer-section-title">Ojcze Nasz</p>
+      <p>Ojcze nasz, któryś jest w niebie, święć się imię Twoje, przyjdź królestwo Twoje, bądź wola Twoja jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom. I nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen.</p>
+
+      <p class="prayer-section-title">Zdrowaś Mario</p>
+      <p>Zdrowaś Mario, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus. Święta Maryjo, Matko Boża, módl się za nami grzesznymi teraz i w godzinę śmierci naszej. Amen.</p>
+
+      <p class="prayer-section-title">Chwała Ojcu</p>
+      <p>Chwała Ojcu i Synowi, i Duchowi Świętemu, jak była na początku, teraz i zawsze, i na wieki wieków. Amen.</p>
+
+      <p class="prayer-section-title">O mój Jezu</p>
+      <p>O mój Jezu, przebacz nam nasze grzechy, zachowaj nas od ognia piekielnego, zaprowadź wszystkie dusze do nieba i dopomóż szczególnie tym, którzy najbardziej potrzebują Twojego miłosierdzia.</p>
+    `;
+
+    return `
+      <p class="prayer-instruction">${isLastPart ? "Odmów dwie ostatnie dziesiątki różańca rozważając następujące tajemnice:" : "Odmów trzy pierwsze dziesiątki różańca rozważając następujące tajemnice:"}</p>
+      <ul style="margin-bottom: 1rem; list-style-type: decimal; margin-left: 1.5rem;">
+        ${titleArray.map(t => `<li><strong>${t}</strong></li>`).join('')}
+      </ul>
+      ${commonPrayers}
+    `;
+  }
+
+  function initDynamicMysteries() {
+    const todayMysteries = getMysteriesForToday();
+    const firstPart = todayMysteries.slice(0, 3);
+    const secondPart = todayMysteries.slice(3, 5);
+
+    const part1HTML = generateMysteryHTML(firstPart, false);
+    const part2HTML = generateMysteryHTML(secondPart, true);
+
+    document.querySelectorAll('.rosary-part-1').forEach(el => {
+      el.innerHTML = part1HTML;
+    });
+
+    document.querySelectorAll('.rosary-part-2').forEach(el => {
+      el.innerHTML = part2HTML;
+    });
+  }
+
   // --- Initialize ---
+  initDynamicMysteries();
   const initialDay = getDayFromHash();
   if (initialDay !== 1) {
     switchToDay(initialDay, false);
